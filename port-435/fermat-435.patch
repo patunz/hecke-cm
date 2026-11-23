@@ -1,0 +1,606 @@
+diff --git a/Definitions/Def_AutomorphicForm_CentreCutSiegelSet.lean b/Definitions/Def_AutomorphicForm_CentreCutSiegelSet.lean
+index 678fb93f..717b36a2 100644
+--- a/Definitions/Def_AutomorphicForm_CentreCutSiegelSet.lean
++++ b/Definitions/Def_AutomorphicForm_CentreCutSiegelSet.lean
+@@ -1,2 +1,3 @@
++import Mathlib
+ import Definitions.Def_NumberField_AdelicVolume
+ 
+@@ -78,5 +79,5 @@ theorem centreCutSiegelSet_subset_integralWindowedSiegelSet {c u d₁ d₂ : ℝ
+   unfold archHeight
+   rw [← Finset.prod_pow_eq_pow_sum]
+-  exact Finset.prod_le_prod (fun w _ => pow_nonneg hc _)
++  exact Finset.prod_le_prod₀ (fun w _ => pow_nonneg hc _)
+     (fun w _ => pow_le_pow_left₀ hc (hfloor w) _)
+ 
+diff --git a/Definitions/Def_AutomorphicForm_SiegelReduction.lean b/Definitions/Def_AutomorphicForm_SiegelReduction.lean
+index ea22ed3e..ae5a3f5a 100644
+--- a/Definitions/Def_AutomorphicForm_SiegelReduction.lean
++++ b/Definitions/Def_AutomorphicForm_SiegelReduction.lean
+@@ -1,2 +1,3 @@
++import Mathlib
+ import Definitions.Def_AutomorphicForm_SiegelCoordinates
+ 
+@@ -77,5 +78,5 @@ theorem archHeight_globalPoints_mul_mul_archHeight_le (γ : GL (Fin 2) F)
+           (w ((γ : Matrix (Fin 2) (Fin 2) F).det) / w ((γ : Matrix (Fin 2) (Fin 2) F) 1 0) ^ 2)
+             ^ w.mult := by
+-        refine Finset.prod_le_prod (fun w _ => pow_nonneg (hnonneg w) _) fun w _ => ?_
++        refine Finset.prod_le_prod₀ (fun w _ => pow_nonneg (hnonneg w) _) fun w _ => ?_
+         exact pow_le_pow_left₀ (hnonneg w) (hplace w) _
+     _ = (∏ w : InfinitePlace F, w ((γ : Matrix (Fin 2) (Fin 2) F).det) ^ w.mult)
+diff --git a/Definitions/Def_DedekindDomain_Completion_BaseChange.lean b/Definitions/Def_DedekindDomain_Completion_BaseChange.lean
+index fdf50c6d..c6b61221 100644
+--- a/Definitions/Def_DedekindDomain_Completion_BaseChange.lean
++++ b/Definitions/Def_DedekindDomain_Completion_BaseChange.lean
+@@ -1,2 +1,3 @@
++import Mathlib
+ import Definitions.Def_DedekindDomain_AdicValuation_InlineSpecific
+ import Definitions.Def_DedekindDomain_IntegralClosure
+@@ -111,6 +112,5 @@ instance [Algebra R S] [CommSemiring A] [Algebra R A] [CommSemiring B] [Algebra
+   map_smul₁ s x := ψ.baseChange_of_algebraMap.map_smul_of_tower ..
+   map_smul₂ a x := by
+-    induction x using TensorProduct.induction_on with
+-    | zero => simp
++    induction x using TensorProduct.inductionOn with
+     | tmul x y =>
+       simp [TensorProduct.smul_tmul', -algebraMap_smul,
+@@ -472,9 +472,9 @@ lemma valued_adicCompletionSemialgHom (x) :
+   intro a
+   change Valued.v (a : v.adicCompletion K) ^ _ = Valued.v (w.adicCompletionSemialgHom K L a)
+-  rw [adicCompletionSemialgHom_coe, adicCompletion.valued_coe, ← valuation_comap A K L B w.1]
+-  simp only [w.2]
+-  congr 1
+-  rw [adicCompletion.valued_ofCompletion, Valued.valuedCompletion_apply]
+-  rfl
++  rw [adicCompletionSemialgHom_coe, adicCompletion.valued_coe, adicCompletion.valued_ofCompletion,
++    Valued.valuedCompletion_apply]
++  have h := valuation_comap A K L B w.1 a.ofVal
++  simp only [w.2] at h ⊢
++  exact h
+ 
+ lemma adicCompletionSemialgHom_image_adicCompletionIntegers :
+@@ -564,17 +564,7 @@ open WithZeroMulInt Valued in
+ 
+ noncomputable local instance :
+-    Valuation.RankOne (Valued.v : Valuation (adicCompletion K v) ℤᵐ⁰) where
+-  hom' := (toNNReal (by norm_num : (2 : NNReal) ≠ 0)).comp
+-    (valueGroup₀_equiv_withZeroMulInt _).toMonoidWithZeroHom
+-  strictMono' := toNNReal_strictMono (by norm_num) |>.comp
+-    (valueGroup₀_equiv_withZeroMulInt_strictMono _)
+-  exists_val_nontrivial := by
+-    obtain ⟨x, hx1, hx2⟩ := Submodule.exists_mem_ne_zero_of_ne_bot v.ne_bot
+-    use algebraMap A K x
+-    rw [valuedAdicCompletion_eq_valuation' v (algebraMap A K x)]
+-    constructor
+-    · simpa only [ne_eq, map_eq_zero, FaithfulSMul.algebraMap_eq_zero_iff]
+-    · apply ne_of_lt
+-      rwa [valuation_of_algebraMap, intValuation_lt_one_iff_mem]
++    Valuation.RankOne (Valued.v : Valuation (adicCompletion K v) ℤᵐ⁰) :=
++  Valuation.IsRankOneDiscrete.rankOne (Valued.v : Valuation (adicCompletion K v) ℤᵐ⁰)
++    (by norm_num : (1 : NNReal) < 2)
+ 
+ attribute [local instance 9999] Algebra.toModule in
+@@ -669,8 +659,4 @@ lemma tensorAdicCompletionIntegersTo_range_subset_closure [FiniteDimensional K L
+   rintro _ ⟨s, rfl⟩
+   induction s with
+-    | zero =>
+-        apply subset_closure
+-        use 0
+-        simp
+     | add x y hx hy =>
+ 
+@@ -1074,5 +1060,4 @@ private lemma rightActions_smul_eq_one_tmul_mul {R S M : Type*} [CommSemiring R]
+     s • x = (1 ⊗ₜ[R] s) * x := by
+   induction x with
+-  | zero => simp
+   | add a b ha hb => rw [smul_add, mul_add, ha, hb]
+   | tmul m t => rw [rightActions_smul_tmul_right, Algebra.TensorProduct.tmul_mul_tmul, one_mul]
+diff --git a/Definitions/Def_DedekindDomain_IntegralClosure.lean b/Definitions/Def_DedekindDomain_IntegralClosure.lean
+index 5eb0a18e..f994ff16 100644
+--- a/Definitions/Def_DedekindDomain_IntegralClosure.lean
++++ b/Definitions/Def_DedekindDomain_IntegralClosure.lean
+@@ -237,5 +237,4 @@ noncomputable def linearEquivTensorProductModuleLeft : L ⊗[K] M ≃ₗ[B] B 
+     map_smul' b x := by
+       induction x with
+-      | zero => simp
+       | tmul l m => simp [LinearEquivTensorProduct_symm_tmul, Algebra.smul_def]; ring
+       | add => simp_all
+diff --git a/Definitions/Def_Mathlib_RightActionInstances.lean b/Definitions/Def_Mathlib_RightActionInstances.lean
+index 7f2127c2..e0498402 100644
+--- a/Definitions/Def_Mathlib_RightActionInstances.lean
++++ b/Definitions/Def_Mathlib_RightActionInstances.lean
+@@ -31,6 +31,4 @@ scoped instance : Algebra S (B ⊗[R] S) where
+   commutes' s bs := by
+     induction bs with
+-    | zero => simp only [AlgHom.toRingHom_eq_coe, RingHom.coe_coe,
+-      Algebra.TensorProduct.includeRight_apply, mul_zero, zero_mul]
+     | tmul x y =>
+         simp only [AlgHom.toRingHom_eq_coe, RingHom.coe_coe,
+@@ -42,6 +40,4 @@ scoped instance : Algebra S (B ⊗[R] S) where
+   smul_def' s bs := by
+     induction bs with
+-    | zero => simp only [smul_zero, AlgHom.toRingHom_eq_coe, RingHom.coe_coe,
+-      Algebra.TensorProduct.includeRight_apply, mul_zero]
+     | tmul b s =>
+         simp only [smul_def, TensorProduct.comm_tmul, AlgHom.toRingHom_eq_coe, RingHom.coe_coe,
+@@ -71,6 +67,4 @@ def Module.TensorProduct.comm : A ⊗[R] M ≃ₗ[A] M ⊗[R] A where
+   map_smul' a am := by
+     induction am with
+-    | zero => simp only [smul_zero, AddHom.toFun_eq_coe, LinearMap.coe_toAddHom,
+-      map_zero, RingHom.id_apply]
+     | tmul x y =>
+         simp only [smul_tmul', smul_eq_mul, AddHom.toFun_eq_coe, LinearMap.coe_toAddHom,
+diff --git a/Definitions/Def_Mathlib_RingTheory_Localization_BaseChange.lean b/Definitions/Def_Mathlib_RingTheory_Localization_BaseChange.lean
+index e2693a97..7593cdd4 100644
+--- a/Definitions/Def_Mathlib_RingTheory_Localization_BaseChange.lean
++++ b/Definitions/Def_Mathlib_RingTheory_Localization_BaseChange.lean
+@@ -60,5 +60,4 @@ noncomputable def leftModuleTensorEquiv {R : Type*} (M' : Type*)
+   map_smul' r x := by
+     induction x with
+-    | zero => simp
+     | tmul m₁ m₂ => simp [TensorProduct.smul_tmul']
+     | add => simp_all
+diff --git a/Definitions/Def_NumberField_AdelicHaar.lean b/Definitions/Def_NumberField_AdelicHaar.lean
+index fe9f3aee..f1aa0f64 100644
+--- a/Definitions/Def_NumberField_AdelicHaar.lean
++++ b/Definitions/Def_NumberField_AdelicHaar.lean
+@@ -1,2 +1,3 @@
++import Mathlib
+ import Mathlib.NumberTheory.NumberField.AdeleRing
+ import Mathlib.NumberTheory.NumberField.Completion.FinitePlace
+@@ -85,4 +86,10 @@ theorem residue_algebraMap_eq_zero_of_mem {a : R} (ha : a ∈ v.asIdeal) :
+ variable [Module.Free ℤ R] [Module.Finite ℤ R]
+ 
++-- port a Lean 4.35: Mathlib chiede ora queste due classi per la struttura di rango uno
++instance (priority := 50) infinite_of_free_int_port435 : Infinite R := Module.Free.infinite ℤ R
++
++instance (priority := 50) hasFiniteQuotients_port435 : Ring.HasFiniteQuotients R :=
++  Ring.HasFiniteQuotients.of_module_finite (R := ℤ) R
++
+ instance finite_residueField_adicCompletionIntegers :
+     Finite (IsLocalRing.ResidueField (v.adicCompletionIntegers K)) := by
+diff --git a/Definitions/Def_NumberField_AdelicHeight.lean b/Definitions/Def_NumberField_AdelicHeight.lean
+index 356c56d3..c6c2f0d7 100644
+--- a/Definitions/Def_NumberField_AdelicHeight.lean
++++ b/Definitions/Def_NumberField_AdelicHeight.lean
+@@ -1,2 +1,3 @@
++import Mathlib
+ import Definitions.Def_AutomorphicForm_SiegelReduction
+ 
+@@ -282,5 +283,5 @@ theorem finHeight_globalPoints_mul_mul_finHeight_le (γ : GL (Fin 2) F)
+       = ∏ᶠ v, fA v * fB v := (finprod_mul_distrib hfA hfB).symm
+     _ ≤ ∏ᶠ v, nD v / nE v ^ 2 :=
+-        finprod_le_finprod (hfA.mul hfB) hnn
++        finprod_le_finprod₀ (hfA.mul hfB) hnn
+           (show (fun v => nD v / nE v ^ 2).HasFiniteMulSupport from hnD.div (hnE.pow 2)) hle
+     _ = (∏ᶠ v, nD v) / (∏ᶠ v, nE v) ^ 2 := by
+diff --git a/Definitions/Def_NumberField_IntegralAdelicTrace.lean b/Definitions/Def_NumberField_IntegralAdelicTrace.lean
+index 25593a05..ff00feee 100644
+--- a/Definitions/Def_NumberField_IntegralAdelicTrace.lean
++++ b/Definitions/Def_NumberField_IntegralAdelicTrace.lean
+@@ -1,2 +1,3 @@
++import Mathlib
+ import Definitions.Def_NumberField_AdelicBox
+ import Mathlib.RingTheory.DedekindDomain.Factorization
+@@ -190,5 +191,5 @@ theorem exists_valBox_subset {U : Set (Π v : HeightOneSpectrum (𝓞 F), v.adic
+   obtain ⟨⟨N, hN⟩, h⟩ := exists_subset_nhds_of_isCompact' hdir
+     (fun N => (isClosed_valBox N.1).isCompact) (fun N => isClosed_valBox N.1) (U := U)
+-    (fun x hx => by
++    (mem_nhdsSet_iff_forall.mpr fun x hx => by
+       have hx0 : x = 0 := eq_zero_of_forall_mem_valBox fun N hN => Set.mem_iInter.mp hx ⟨N, hN⟩
+       rwa [hx0])
+diff --git a/P2M/Sol/S_LanglandsTunnell_HeckeTate_isNicePinned_heckeDatum.lean b/P2M/Sol/S_LanglandsTunnell_HeckeTate_isNicePinned_heckeDatum.lean
+index 03272b14..9d15a8b2 100644
+--- a/P2M/Sol/S_LanglandsTunnell_HeckeTate_isNicePinned_heckeDatum.lean
++++ b/P2M/Sol/S_LanglandsTunnell_HeckeTate_isNicePinned_heckeDatum.lean
+@@ -1,2 +1,4 @@
++import Mathlib
++import Definitions.Compat435
+ import Definitions.Def_LanglandsTunnell_HeckeTate
+ import Definitions.Def_LanglandsTunnell_ArchPlace
+@@ -617,4 +619,5 @@ theorem isAddHaarMeasure_boxHaar :
+     @Measure.IsAddHaarMeasure (AdeleRing (𝓞 F) F) _ _ (adeleBorel (𝓞 F) F) (boxHaar F) := by
+   letI := adeleBorel (𝓞 F) F
++  haveI : BorelSpace (AdeleRing (𝓞 F) F) := ⟨rfl⟩
+   haveI := isAddHaarMeasure_adelicAddHaar (𝓞 F) F
+   exact Measure.IsAddHaarMeasure.smul _ (ENNReal.inv_ne_zero.mpr (adelicAddHaar_adelicBox_lt_top F).ne)
+@@ -1114,5 +1117,5 @@ private theorem toNNReal_exp {e : ℝ≥0} (he : e ≠ 0) (n : ℤ) :
+   have h : WithZero.unzero (WithZero.exp_ne_zero : WithZero.exp n ≠ 0) = Multiplicative.ofAdd n :=
+     WithZero.unzero_coe _
+-  rw [WithZeroMulInt.toNNReal_neg_apply he WithZero.exp_ne_zero, h, toAdd_ofAdd]
++  rw [WithZeroMulInt.toNNReal_neg_apply_old he WithZero.exp_ne_zero, h, toAdd_ofAdd]
+ 
+ private theorem modulus_of_mem_shell (hA : ∀ x : v.adicCompletion K, modulus x = ‖x‖₊) {j : ℤ}
+diff --git a/P2M/Sol/S_LanglandsTunnell_TateLocal_localZeta_stdTestFunAt_eq_of_unramified.lean b/P2M/Sol/S_LanglandsTunnell_TateLocal_localZeta_stdTestFunAt_eq_of_unramified.lean
+index 3f98358c..c08bf547 100644
+--- a/P2M/Sol/S_LanglandsTunnell_TateLocal_localZeta_stdTestFunAt_eq_of_unramified.lean
++++ b/P2M/Sol/S_LanglandsTunnell_TateLocal_localZeta_stdTestFunAt_eq_of_unramified.lean
+@@ -1,2 +1,4 @@
++import Mathlib
++import Definitions.Compat435
+ import Definitions.Def_LanglandsTunnell_StandardLocalConstantsAt
+ import Theorems.Thm_LanglandsTunnell_TateLocal_modulus_adicCompletion_eq_nnnorm
+@@ -141,5 +143,5 @@ private theorem toNNReal_exp {e : ℝ≥0} (he : e ≠ 0) (n : ℤ) :
+   have h : WithZero.unzero (WithZero.exp_ne_zero : WithZero.exp n ≠ 0) = Multiplicative.ofAdd n :=
+     WithZero.unzero_coe _
+-  rw [WithZeroMulInt.toNNReal_neg_apply he WithZero.exp_ne_zero, h, toAdd_ofAdd]
++  rw [WithZeroMulInt.toNNReal_neg_apply_old he WithZero.exp_ne_zero, h, toAdd_ofAdd]
+ 
+ private theorem modulus_of_mem_shell
+diff --git a/P2M/Sol/S_LanglandsTunnell_TateLocal_localZeta_tateFourier_indicator_setOf_valued_sub_one_le.lean b/P2M/Sol/S_LanglandsTunnell_TateLocal_localZeta_tateFourier_indicator_setOf_valued_sub_one_le.lean
+index e9bae47f..7bc68a06 100644
+--- a/P2M/Sol/S_LanglandsTunnell_TateLocal_localZeta_tateFourier_indicator_setOf_valued_sub_one_le.lean
++++ b/P2M/Sol/S_LanglandsTunnell_TateLocal_localZeta_tateFourier_indicator_setOf_valued_sub_one_le.lean
+@@ -1,2 +1,4 @@
++import Mathlib
++import Definitions.Compat435
+ import Definitions.Def_LanglandsTunnell_TateLocalConstantsAt
+ import Theorems.Thm_LanglandsTunnell_TateLocal_tateFourier_indicator_setOf_valued_sub_le
+@@ -220,5 +222,5 @@ private theorem norm_eq_zpow_of_valued {x : v.adicCompletion K} {m : ℤ} (hx :
+     show (WithZero.exp m) = ((Multiplicative.ofAdd m : Multiplicative ℤ) : WithZero (Multiplicative ℤ))
+       from rfl,
+-    WithZeroMulInt.toNNReal_neg_apply _ WithZero.coe_ne_zero, WithZero.unzero_coe, toAdd_ofAdd,
++    WithZeroMulInt.toNNReal_neg_apply_old _ WithZero.coe_ne_zero, WithZero.unzero_coe, toAdd_ofAdd,
+     NNReal.coe_zpow, NNReal.coe_natCast]
+ 
+diff --git a/P2M/Sol/S_LanglandsTunnell_TateLocal_measureReal_setOf_valued_le_exp.lean b/P2M/Sol/S_LanglandsTunnell_TateLocal_measureReal_setOf_valued_le_exp.lean
+index db81b1d5..1a3ad70d 100644
+--- a/P2M/Sol/S_LanglandsTunnell_TateLocal_measureReal_setOf_valued_le_exp.lean
++++ b/P2M/Sol/S_LanglandsTunnell_TateLocal_measureReal_setOf_valued_le_exp.lean
+@@ -1,2 +1,4 @@
++import Mathlib
++import Definitions.Compat435
+ import Mathlib.RingTheory.DedekindDomain.AdicValuation
+ import Mathlib.MeasureTheory.Measure.Haar.Basic
+@@ -81,5 +83,5 @@ private theorem distribHaarChar_uniformizerUnit [MeasurableSpace (v.adicCompleti
+     show (WithZero.exp (-1 : ℤ)) = ((Multiplicative.ofAdd (-1 : ℤ) : Multiplicative ℤ) : WithZero (Multiplicative ℤ))
+       from rfl,
+-    WithZeroMulInt.toNNReal_neg_apply _ WithZero.coe_ne_zero, WithZero.unzero_coe, toAdd_ofAdd, NNReal.coe_zpow,
++    WithZeroMulInt.toNNReal_neg_apply_old _ WithZero.coe_ne_zero, WithZero.unzero_coe, toAdd_ofAdd, NNReal.coe_zpow,
+     NNReal.coe_natCast, zpow_neg_one]
+ 
+diff --git a/P2M/Sol/S_LanglandsTunnell_TateLocal_modulus_adicCompletion_eq_nnnorm.lean b/P2M/Sol/S_LanglandsTunnell_TateLocal_modulus_adicCompletion_eq_nnnorm.lean
+index 7369c3ec..ffc0c033 100644
+--- a/P2M/Sol/S_LanglandsTunnell_TateLocal_modulus_adicCompletion_eq_nnnorm.lean
++++ b/P2M/Sol/S_LanglandsTunnell_TateLocal_modulus_adicCompletion_eq_nnnorm.lean
+@@ -1,2 +1,4 @@
++import Mathlib
++import Definitions.Compat435
+ import Definitions.Def_LanglandsTunnell_TateLocalConstantsAt
+ import Definitions.Def_LanglandsTunnell_StandardLocalConstantsAt
+@@ -362,5 +364,5 @@ private theorem toNNReal_exp {e : ℝ≥0} (he : e ≠ 0) (n : ℤ) :
+   have h : WithZero.unzero (WithZero.exp_ne_zero : WithZero.exp n ≠ 0) = Multiplicative.ofAdd n :=
+     WithZero.unzero_coe _
+-  rw [WithZeroMulInt.toNNReal_neg_apply he WithZero.exp_ne_zero, h, toAdd_ofAdd]
++  rw [WithZeroMulInt.toNNReal_neg_apply_old he WithZero.exp_ne_zero, h, toAdd_ofAdd]
+ 
+ private theorem modulus_eq_toNNReal_valued (x : v.adicCompletion K) :
+diff --git a/P2M/Sol/S_LanglandsTunnell_TateLocal_selfDualHaarAt_real_units_eq.lean b/P2M/Sol/S_LanglandsTunnell_TateLocal_selfDualHaarAt_real_units_eq.lean
+index b70492d3..706c1c35 100644
+--- a/P2M/Sol/S_LanglandsTunnell_TateLocal_selfDualHaarAt_real_units_eq.lean
++++ b/P2M/Sol/S_LanglandsTunnell_TateLocal_selfDualHaarAt_real_units_eq.lean
+@@ -1,2 +1,4 @@
++import Mathlib
++import Definitions.Compat435
+ import Definitions.Def_LanglandsTunnell_StandardLocalConstantsAt
+ import Theorems.Thm_LanglandsTunnell_TateLocal_modulus_adicCompletion_eq_nnnorm
+@@ -67,5 +69,5 @@ private theorem toNNReal_exp {e : ℝ≥0} (he : e ≠ 0) (n : ℤ) :
+   have h : WithZero.unzero (WithZero.exp_ne_zero : WithZero.exp n ≠ 0) = Multiplicative.ofAdd n :=
+     WithZero.unzero_coe _
+-  rw [WithZeroMulInt.toNNReal_neg_apply he WithZero.exp_ne_zero, h, toAdd_ofAdd]
++  rw [WithZeroMulInt.toNNReal_neg_apply_old he WithZero.exp_ne_zero, h, toAdd_ofAdd]
+ 
+ private theorem modulus_of_mem_shell
+diff --git a/P2M/Sol/S_LanglandsTunnell_TateLocal_setIntegral_addChar_mul_charExt_mul_setIntegral_inv_mul_pow_eq.lean b/P2M/Sol/S_LanglandsTunnell_TateLocal_setIntegral_addChar_mul_charExt_mul_setIntegral_inv_mul_pow_eq.lean
+index 3b584a5a..efa43378 100644
+--- a/P2M/Sol/S_LanglandsTunnell_TateLocal_setIntegral_addChar_mul_charExt_mul_setIntegral_inv_mul_pow_eq.lean
++++ b/P2M/Sol/S_LanglandsTunnell_TateLocal_setIntegral_addChar_mul_charExt_mul_setIntegral_inv_mul_pow_eq.lean
+@@ -1,2 +1,4 @@
++import Mathlib
++import Definitions.Compat435
+ import Definitions.Def_LanglandsTunnell_TateLocalConstantsAt
+ import Definitions.Def_LanglandsTunnell_StandardLocalConstantsAt
+@@ -129,5 +131,5 @@ theorem norm_eq_zpow_of_valued {x : v.adicCompletion K} {m : ℤ} (hx : Valued.v
+     show (WithZero.exp m) = ((Multiplicative.ofAdd m : Multiplicative ℤ) : WithZero (Multiplicative ℤ))
+       from rfl,
+-    WithZeroMulInt.toNNReal_neg_apply _ WithZero.coe_ne_zero, WithZero.unzero_coe, toAdd_ofAdd,
++    WithZeroMulInt.toNNReal_neg_apply_old _ WithZero.coe_ne_zero, WithZero.unzero_coe, toAdd_ofAdd,
+     NNReal.coe_zpow, NNReal.coe_natCast]
+ 
+diff --git a/P2M/Sol/S_LanglandsTunnell_TateLocal_setIntegral_psiLocal_mul_charExt_inv_mul_cpow_eq_charExt_mul_stdRootNumberAt.lean b/P2M/Sol/S_LanglandsTunnell_TateLocal_setIntegral_psiLocal_mul_charExt_inv_mul_cpow_eq_charExt_mul_stdRootNumberAt.lean
+index 70b56e80..62d131b9 100644
+--- a/P2M/Sol/S_LanglandsTunnell_TateLocal_setIntegral_psiLocal_mul_charExt_inv_mul_cpow_eq_charExt_mul_stdRootNumberAt.lean
++++ b/P2M/Sol/S_LanglandsTunnell_TateLocal_setIntegral_psiLocal_mul_charExt_inv_mul_cpow_eq_charExt_mul_stdRootNumberAt.lean
+@@ -1,2 +1,4 @@
++import Mathlib
++import Definitions.Compat435
+ import Definitions.Def_LanglandsTunnell_StandardLocalConstantsAt
+ import Theorems.Thm_LanglandsTunnell_TateLocal_localZeta_tateFourier_stdTestFunAt
+@@ -89,5 +91,5 @@ theorem norm_eq_zpow_of_valued {x : v.adicCompletion K} {m : ℤ} (hx : Valued.v
+     show (WithZero.exp m) = ((Multiplicative.ofAdd m : Multiplicative ℤ) : WithZero (Multiplicative ℤ))
+       from rfl,
+-    WithZeroMulInt.toNNReal_neg_apply _ WithZero.coe_ne_zero, WithZero.unzero_coe, toAdd_ofAdd,
++    WithZeroMulInt.toNNReal_neg_apply_old _ WithZero.coe_ne_zero, WithZero.unzero_coe, toAdd_ofAdd,
+     NNReal.coe_zpow, NNReal.coe_natCast]
+ 
+diff --git a/P2M/Sol/S_LanglandsTunnell_TateLocal_stdRootNumberAt_mul_of_hasConductorExponentAt_zero.lean b/P2M/Sol/S_LanglandsTunnell_TateLocal_stdRootNumberAt_mul_of_hasConductorExponentAt_zero.lean
+index 5d49a24b..2b11a5c1 100644
+--- a/P2M/Sol/S_LanglandsTunnell_TateLocal_stdRootNumberAt_mul_of_hasConductorExponentAt_zero.lean
++++ b/P2M/Sol/S_LanglandsTunnell_TateLocal_stdRootNumberAt_mul_of_hasConductorExponentAt_zero.lean
+@@ -1,2 +1,4 @@
++import Mathlib
++import Definitions.Compat435
+ import Definitions.Def_LanglandsTunnell_StandardLocalConstantsAt
+ import Theorems.Thm_LanglandsTunnell_TateLocal_modulus_adicCompletion_eq_nnnorm
+@@ -148,5 +150,5 @@ private theorem toNNReal_exp {e : ℝ≥0} (he : e ≠ 0) (n : ℤ) :
+   have h : WithZero.unzero (WithZero.exp_ne_zero : WithZero.exp n ≠ 0) = Multiplicative.ofAdd n :=
+     WithZero.unzero_coe _
+-  rw [WithZeroMulInt.toNNReal_neg_apply he WithZero.exp_ne_zero, h, toAdd_ofAdd]
++  rw [WithZeroMulInt.toNNReal_neg_apply_old he WithZero.exp_ne_zero, h, toAdd_ofAdd]
+ 
+ private theorem modulus_of_mem_shell
+diff --git a/P2M/Sol/S_LanglandsTunnell_TateLocal_stdRootNumberAt_one.lean b/P2M/Sol/S_LanglandsTunnell_TateLocal_stdRootNumberAt_one.lean
+index d86a9c29..718ece6d 100644
+--- a/P2M/Sol/S_LanglandsTunnell_TateLocal_stdRootNumberAt_one.lean
++++ b/P2M/Sol/S_LanglandsTunnell_TateLocal_stdRootNumberAt_one.lean
+@@ -1,2 +1,4 @@
++import Mathlib
++import Definitions.Compat435
+ import Definitions.Def_LanglandsTunnell_StandardLocalConstantsAt
+ import Theorems.Thm_LanglandsTunnell_TateLocal_localZeta_stdTestFunAt_eq_of_unramified
+@@ -354,5 +356,5 @@ private theorem toNNReal_exp {e : ℝ≥0} (he : e ≠ 0) (k : ℤ) :
+   have h : WithZero.unzero (WithZero.exp_ne_zero : WithZero.exp k ≠ 0) = Multiplicative.ofAdd k :=
+     WithZero.unzero_coe _
+-  rw [WithZeroMulInt.toNNReal_neg_apply he WithZero.exp_ne_zero, h, toAdd_ofAdd]
++  rw [WithZeroMulInt.toNNReal_neg_apply_old he WithZero.exp_ne_zero, h, toAdd_ofAdd]
+ 
+ private theorem modulus_of_mem_shell (hA : ∀ x : v.adicCompletion K, modulus x = ‖x‖₊) {n m : ℕ}
+diff --git a/P2M/Sol/S_NumberField_AdeleRing_distribHaarChar_eq_prod_norm_pow_mult_mul_finprod_norm.lean b/P2M/Sol/S_NumberField_AdeleRing_distribHaarChar_eq_prod_norm_pow_mult_mul_finprod_norm.lean
+index e793a69f..ea357069 100644
+--- a/P2M/Sol/S_NumberField_AdeleRing_distribHaarChar_eq_prod_norm_pow_mult_mul_finprod_norm.lean
++++ b/P2M/Sol/S_NumberField_AdeleRing_distribHaarChar_eq_prod_norm_pow_mult_mul_finprod_norm.lean
+@@ -6,4 +6,5 @@ import Definitions.Def_NumberField_AdelicBox
+ import Definitions.Def_Mathlib_LinearAlgebra_Countable
+ import Mathlib
++import Definitions.Compat435
+ import P2M.Util
+ namespace P2MW.S_NumberField_AdeleRing_distribHaarChar_eq_prod_norm_pow_mult_mul_finprod_norm
+@@ -414,5 +415,5 @@ theorem absNorm_globalIdeal_mul_finprod_norm (y : (FiniteAdeleRing (𝓞 F) F)ˣ
+     · refine Finset.prod_congr rfl fun v _ => ?_
+       rw [NumberField.FinitePlace.norm_def,
+-        WithZeroMulInt.toNNReal_neg_apply _ (valued_apply_ne_zero F y v),
++        WithZeroMulInt.toNNReal_neg_apply_old _ (valued_apply_ne_zero F y v),
+         toAdd_unzero_eq_neg_ordNat F y hy v]
+       push_cast
+diff --git a/P2M/Sol/S_NumberField_AdelicBox_exists_eq_sum_indicator_image_integralFiniteAdeles.lean b/P2M/Sol/S_NumberField_AdelicBox_exists_eq_sum_indicator_image_integralFiniteAdeles.lean
+index e350f24c..b51a563f 100644
+--- a/P2M/Sol/S_NumberField_AdelicBox_exists_eq_sum_indicator_image_integralFiniteAdeles.lean
++++ b/P2M/Sol/S_NumberField_AdelicBox_exists_eq_sum_indicator_image_integralFiniteAdeles.lean
+@@ -1,2 +1,3 @@
++import Mathlib
+ import Definitions.Def_NumberField_AdelicBox
+ import Mathlib.Analysis.SpecificLimits.Basic
+@@ -157,5 +158,5 @@ theorem exists_dBox_subset {U : Set (FiniteAdeleRing (𝓞 F) F)} (hU : U ∈ 
+     exact ⟨⟨d * e, mul_ne_zero hd he⟩, dBox_mul_subset F d e, h2⟩
+   obtain ⟨⟨d, hd⟩, h⟩ := exists_subset_nhds_of_isCompact' hdir (fun d => isCompact_dBox F d.1)
+-    (fun d => (isCompact_dBox F d.1).isClosed) (U := U) (fun x hx => by
++    (fun d => (isCompact_dBox F d.1).isClosed) (U := U) (mem_nhdsSet_iff_forall.mpr fun x hx => by
+       have hx0 : x = 0 := eq_zero_of_forall_mem_dBox F fun d hd => by
+         have := Set.mem_iInter.mp hx ⟨d, hd⟩; exact this
+diff --git a/P2M/Sol/S_NumberField_AdelicBox_exists_ne_zero_forall_addChar_mul_eq_one.lean b/P2M/Sol/S_NumberField_AdelicBox_exists_ne_zero_forall_addChar_mul_eq_one.lean
+index c34c0435..b08c59dd 100644
+--- a/P2M/Sol/S_NumberField_AdelicBox_exists_ne_zero_forall_addChar_mul_eq_one.lean
++++ b/P2M/Sol/S_NumberField_AdelicBox_exists_ne_zero_forall_addChar_mul_eq_one.lean
+@@ -1,2 +1,3 @@
++import Mathlib
+ import Definitions.Def_NumberField_AdelicBox
+ import Mathlib.Analysis.SpecificLimits.Basic
+@@ -155,5 +156,5 @@ theorem exists_dBox_subset {U : Set (FiniteAdeleRing (𝓞 F) F)} (hU : U ∈ 
+     exact ⟨⟨d * e, mul_ne_zero hd he⟩, dBox_mul_subset F d e, h2⟩
+   obtain ⟨⟨d, hd⟩, h⟩ := exists_subset_nhds_of_isCompact' hdir (fun d => isCompact_dBox F d.1)
+-    (fun d => (isCompact_dBox F d.1).isClosed) (U := U) (fun x hx => by
++    (fun d => (isCompact_dBox F d.1).isClosed) (U := U) (mem_nhdsSet_iff_forall.mpr fun x hx => by
+       have hx0 : x = 0 := eq_zero_of_forall_mem_dBox F fun d hd => by
+         have := Set.mem_iInter.mp hx ⟨d, hd⟩; exact this
+diff --git a/P2M/Sol/S_NumberField_AdelicBox_integralFiniteAdeles_subset_closure_range_algebraMap_ringOfIntegers.lean b/P2M/Sol/S_NumberField_AdelicBox_integralFiniteAdeles_subset_closure_range_algebraMap_ringOfIntegers.lean
+index 49a43cdd..676c607c 100644
+--- a/P2M/Sol/S_NumberField_AdelicBox_integralFiniteAdeles_subset_closure_range_algebraMap_ringOfIntegers.lean
++++ b/P2M/Sol/S_NumberField_AdelicBox_integralFiniteAdeles_subset_closure_range_algebraMap_ringOfIntegers.lean
+@@ -1,2 +1,3 @@
++import Mathlib
+ import Definitions.Def_NumberField_AdelicBox
+ import P2M.Util
+@@ -83,5 +84,5 @@ theorem solution (F : Type) [Field F] [NumberField F] :
+           rw [← Finset.mul_prod_erase _ _ hmem]
+           exact mul_le_of_le_one_right zero_le'
+-            (Finset.prod_le_one (fun w _ => zero_le') (fun w _ => v.intValuation_le_one _))
++            (Finset.prod_le_one₀ (fun w _ => zero_le') (fun w _ => v.intValuation_le_one _))
+       _ < γ v hv := hrval v (hTmem v hvTf)
+ 
+diff --git a/P2M/Sol/S_NumberField_AdelicFourier_comp_add_right_mem_pureTensorSet.lean b/P2M/Sol/S_NumberField_AdelicFourier_comp_add_right_mem_pureTensorSet.lean
+index 59b809b6..624c4cd9 100644
+--- a/P2M/Sol/S_NumberField_AdelicFourier_comp_add_right_mem_pureTensorSet.lean
++++ b/P2M/Sol/S_NumberField_AdelicFourier_comp_add_right_mem_pureTensorSet.lean
+@@ -1,2 +1,3 @@
++import Mathlib
+ import Definitions.Def_NumberField_AdelicFourier
+ import P2M.Util
+@@ -22,5 +23,5 @@ theorem solution
+     nlinarith [norm_nonneg (z + c), norm_nonneg c]
+   refine ⟨SchwartzMap.compCLM ℝ hTG hUp g, fun z => h (z + y.2),
+-    hlc.comp_continuous (continuous_add_right y.2),
++    hlc.comp_continuous (continuous_add_const y.2),
+     hcs.comp_homeomorph (Homeomorph.addRight y.2), ?_⟩
+   funext x
+diff --git a/P2M/Sol/S_NumberField_TateGlobal_exists_eq_normPowChar_of_forall_mem_normOneIdeles.lean b/P2M/Sol/S_NumberField_TateGlobal_exists_eq_normPowChar_of_forall_mem_normOneIdeles.lean
+index 90672dfb..bd946df1 100644
+--- a/P2M/Sol/S_NumberField_TateGlobal_exists_eq_normPowChar_of_forall_mem_normOneIdeles.lean
++++ b/P2M/Sol/S_NumberField_TateGlobal_exists_eq_normPowChar_of_forall_mem_normOneIdeles.lean
+@@ -1,2 +1,4 @@
++import Mathlib
++import Definitions.Compat435
+ import Definitions.Def_NumberField_TateGlobalZeta
+ import Definitions.Def_NumberField_NormPowChar
+@@ -4111,5 +4113,5 @@ variable {F : Type} [Field F] [NumberField F] {v : HeightOneSpectrum (𝓞 F)}
+ theorem toNNReal_exp {e : ℝ≥0} (he : e ≠ 0) (a : ℤ) :
+     WithZeroMulInt.toNNReal he (WithZero.exp a) = e ^ a := by
+-  rw [WithZeroMulInt.toNNReal_neg_apply he WithZero.exp_ne_zero]
++  rw [WithZeroMulInt.toNNReal_neg_apply_old he WithZero.exp_ne_zero]
+   congr 1
+ 
+@@ -5485,5 +5487,5 @@ theorem qmp_smul_restrict (g : G) (D : Set α) :
+   have h1 : Measure.QuasiMeasurePreserving (fun x : α => g • x) μ μ :=
+     (measurePreserving_smul g μ).quasiMeasurePreserving
+-  exact h1.mono_left Measure.restrict_le_self.absolutelyContinuous
++  exact Measure.QuasiMeasurePreserving.mono_left h1 Measure.restrict_le_self.absolutelyContinuous
+ 
+ theorem lintegral_restrict_tsum_smul {D : Set α} (hD : IsFundamentalDomain G D μ)
+diff --git a/P2M/Sol/S_NumberField_TateGlobal_ideleNorm_det_eq_prod_archDetNorm_pow_mult.lean b/P2M/Sol/S_NumberField_TateGlobal_ideleNorm_det_eq_prod_archDetNorm_pow_mult.lean
+index 4f898a72..8c03d23e 100644
+--- a/P2M/Sol/S_NumberField_TateGlobal_ideleNorm_det_eq_prod_archDetNorm_pow_mult.lean
++++ b/P2M/Sol/S_NumberField_TateGlobal_ideleNorm_det_eq_prod_archDetNorm_pow_mult.lean
+@@ -1,2 +1,4 @@
++import Mathlib
++import Definitions.Compat435
+ import Definitions.Def_NumberField_TateGlobalZeta
+ import Theorems.Thm_NumberField_AdeleRing_distribHaarChar_eq_prod_norm_pow_mult_mul_finprod_norm
+@@ -26,5 +28,5 @@ private theorem norm_eq_zpow_of_valued (v : HeightOneSpectrum (𝓞 F)) {x : v.a
+     show (WithZero.exp m) = ((Multiplicative.ofAdd m : Multiplicative ℤ) : WithZero (Multiplicative ℤ))
+       from rfl,
+-    WithZeroMulInt.toNNReal_neg_apply _ WithZero.coe_ne_zero, WithZero.unzero_coe, toAdd_ofAdd,
++    WithZeroMulInt.toNNReal_neg_apply_old _ WithZero.coe_ne_zero, WithZero.unzero_coe, toAdd_ofAdd,
+     NNReal.coe_zpow, NNReal.coe_natCast]
+ 
+diff --git a/P2M/Sol/S_NumberField_TateGlobal_ideleNorm_uniformizerIdele.lean b/P2M/Sol/S_NumberField_TateGlobal_ideleNorm_uniformizerIdele.lean
+index 3a9c03de..c5c779d5 100644
+--- a/P2M/Sol/S_NumberField_TateGlobal_ideleNorm_uniformizerIdele.lean
++++ b/P2M/Sol/S_NumberField_TateGlobal_ideleNorm_uniformizerIdele.lean
+@@ -1,2 +1,4 @@
++import Mathlib
++import Definitions.Compat435
+ import Definitions.Def_NumberField_TateGlobalZeta
+ import Definitions.Def_AutomorphicForm_HeckeEigenfunction
+@@ -15,5 +17,5 @@ private theorem norm_coe_uniformizerUnit (F : Type) [Field F] [NumberField F]
+     ‖(uniformizerUnit F v : v.adicCompletion F)‖ = ((Ideal.absNorm v.asIdeal : ℕ) : ℝ)⁻¹ := by
+   rw [NumberField.FinitePlace.norm_def, valued_uniformizerUnit,
+-    WithZeroMulInt.toNNReal_neg_apply _ WithZero.exp_ne_zero]
++    WithZeroMulInt.toNNReal_neg_apply_old _ WithZero.exp_ne_zero]
+   simp only [WithZero.exp, WithZero.unzero_coe, toAdd_ofAdd, zpow_neg, zpow_one, NNReal.coe_inv,
+     NNReal.coe_natCast]
+diff --git a/P2M/Sol/S_NumberField_TateGlobal_integrable_zetaIntegrand.lean b/P2M/Sol/S_NumberField_TateGlobal_integrable_zetaIntegrand.lean
+index e3a5ac8a..8f70eb2c 100644
+--- a/P2M/Sol/S_NumberField_TateGlobal_integrable_zetaIntegrand.lean
++++ b/P2M/Sol/S_NumberField_TateGlobal_integrable_zetaIntegrand.lean
+@@ -1,2 +1,4 @@
++import Mathlib
++import Definitions.Compat435
+ import Definitions.Def_NumberField_TateGlobalZeta
+ import Definitions.Def_NumberField_AdelicFourier
+@@ -3212,5 +3214,5 @@ theorem schwartz_le_prod_one_add_norm (g : SchwartzMap (mixedEmbedding.mixedSpac
+     have hstep : ∏ w : InfinitePlace F, (1 + ‖x w‖) ^ N
+         ≤ ∏ _w : InfinitePlace F, (1 + ‖y‖) ^ N := by
+-      refine Finset.prod_le_prod (fun w _ => by positivity) (fun w _ => ?_)
++      refine Finset.prod_le_prod₀ (fun w _ => by positivity) (fun w _ => ?_)
+       have h1 : (1 : ℝ) + ‖x w‖ ≤ 1 + ‖y‖ := by
+         have h2 := norm_coord_le_norm_ringEquiv x w
+@@ -4218,5 +4220,5 @@ theorem summable_norm_mono (ha : Summable fun i => ‖a i‖) (h1 : ∀ i, ‖a
+   calc ∑ k ∈ u, monoN a k ≤ ∏ i ∈ T, (1 - ‖a i‖)⁻¹ := sum_monoN_le_prod h1 T u hu
+     _ ≤ ∏ i ∈ T, Real.exp (c i) :=
+-        Finset.prod_le_prod (fun i _ => inv_nonneg.mpr (hsub i).le) fun i _ => hfac i
++        Finset.prod_le_prod₀ (fun i _ => inv_nonneg.mpr (hsub i).le) fun i _ => hfac i
+     _ = Real.exp (∑ i ∈ T, c i) := (Real.exp_sum T c).symm
+     _ ≤ Real.exp (∑' i, c i) := Real.exp_le_exp.mpr (hcs.sum_le_tsum T fun i _ => hc0 i)
+@@ -5243,5 +5245,5 @@ variable {F : Type} [Field F] [NumberField F] {v : HeightOneSpectrum (𝓞 F)}
+ theorem toNNReal_exp {e : ℝ≥0} (he : e ≠ 0) (a : ℤ) :
+     WithZeroMulInt.toNNReal he (WithZero.exp a) = e ^ a := by
+-  rw [WithZeroMulInt.toNNReal_neg_apply he WithZero.exp_ne_zero]
++  rw [WithZeroMulInt.toNNReal_neg_apply_old he WithZero.exp_ne_zero]
+   congr 1
+ 
+diff --git a/P2M/Sol/S_NumberField_TateGlobal_zetaIntegral_entire_continuation_fe_norm_le_of_re_mem_Icc_of_exists_mem_normOneIdeles_ne_one.lean b/P2M/Sol/S_NumberField_TateGlobal_zetaIntegral_entire_continuation_fe_norm_le_of_re_mem_Icc_of_exists_mem_normOneIdeles_ne_one.lean
+index 41528edc..d512028b 100644
+--- a/P2M/Sol/S_NumberField_TateGlobal_zetaIntegral_entire_continuation_fe_norm_le_of_re_mem_Icc_of_exists_mem_normOneIdeles_ne_one.lean
++++ b/P2M/Sol/S_NumberField_TateGlobal_zetaIntegral_entire_continuation_fe_norm_le_of_re_mem_Icc_of_exists_mem_normOneIdeles_ne_one.lean
+@@ -1,2 +1,4 @@
++import Mathlib
++import Definitions.Compat435
+ import Definitions.Def_NumberField_TateGlobalZeta
+ import Definitions.Def_NumberField_AdelicBox
+@@ -4109,5 +4111,5 @@ variable {F : Type} [Field F] [NumberField F] {v : HeightOneSpectrum (𝓞 F)}
+ theorem toNNReal_exp {e : ℝ≥0} (he : e ≠ 0) (a : ℤ) :
+     WithZeroMulInt.toNNReal he (WithZero.exp a) = e ^ a := by
+-  rw [WithZeroMulInt.toNNReal_neg_apply he WithZero.exp_ne_zero]
++  rw [WithZeroMulInt.toNNReal_neg_apply_old he WithZero.exp_ne_zero]
+   congr 1
+ 
+@@ -5483,5 +5485,5 @@ theorem qmp_smul_restrict (g : G) (D : Set α) :
+   have h1 : Measure.QuasiMeasurePreserving (fun x : α => g • x) μ μ :=
+     (measurePreserving_smul g μ).quasiMeasurePreserving
+-  exact h1.mono_left Measure.restrict_le_self.absolutelyContinuous
++  exact Measure.QuasiMeasurePreserving.mono_left h1 Measure.restrict_le_self.absolutelyContinuous
+ 
+ theorem lintegral_restrict_tsum_smul {D : Set α} (hD : IsFundamentalDomain G D μ)
+diff --git a/P2M/Sol/S_NumberField_TateGlobal_zetaIntegral_mul_eulerFactors_eq.lean b/P2M/Sol/S_NumberField_TateGlobal_zetaIntegral_mul_eulerFactors_eq.lean
+index 85c7d8e3..d83c5783 100644
+--- a/P2M/Sol/S_NumberField_TateGlobal_zetaIntegral_mul_eulerFactors_eq.lean
++++ b/P2M/Sol/S_NumberField_TateGlobal_zetaIntegral_mul_eulerFactors_eq.lean
+@@ -1,2 +1,3 @@
++import Mathlib
+ import Definitions.Def_NumberField_TateGlobalZeta
+ import Definitions.Def_LanglandsTunnell_TateLocalZeta
+@@ -4709,5 +4710,5 @@ theorem summable_norm_mono (ha : Summable fun i => ‖a i‖) (h1 : ∀ i, ‖a
+   calc ∑ k ∈ u, monoN a k ≤ ∏ i ∈ T, (1 - ‖a i‖)⁻¹ := sum_monoN_le_prod h1 T u hu
+     _ ≤ ∏ i ∈ T, Real.exp (c i) :=
+-        Finset.prod_le_prod (fun i _ => inv_nonneg.mpr (hsub i).le) fun i _ => hfac i
++        Finset.prod_le_prod₀ (fun i _ => inv_nonneg.mpr (hsub i).le) fun i _ => hfac i
+     _ = Real.exp (∑ i ∈ T, c i) := (Real.exp_sum T c).symm
+     _ ≤ Real.exp (∑' i, c i) := Real.exp_le_exp.mpr (hcs.sum_le_tsum T fun i _ => hc0 i)
+diff --git a/P2M/Sol/S_NumberField_exists_completedDedekindZeta_package.lean b/P2M/Sol/S_NumberField_exists_completedDedekindZeta_package.lean
+index 83ef1c5a..8090ec5e 100644
+--- a/P2M/Sol/S_NumberField_exists_completedDedekindZeta_package.lean
++++ b/P2M/Sol/S_NumberField_exists_completedDedekindZeta_package.lean
+@@ -3302,5 +3302,4 @@ theorem gapsw80_t8_mkParam_measurePreserving :
+   convert hp
+ 
+-  · rfl
+   simp only [Measure.volume_eq_prod]
+   congr!
+@@ -3419,5 +3418,5 @@ theorem gapsw80_t8_setLIntegral_placeParam {f : realSpace K → ENNReal} (hf : M
+     (continuous_expMapBasis K).measurable
+   have hmsq : Measurable (fun σ : realSpace K => fun w => σ w ^ 2) :=
+-    measurable_pi_lambda _ fun w => (measurable_pi_apply w).pow_const 2
++    measurable_pi_lambda fun w => (measurable_pi_apply w).pow_const 2
+ 
+   set H : realSpace K → ENNReal := fun c =>
+@@ -4464,5 +4463,5 @@ theorem gapsw80_t8_integrableOn_orbitRepr (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ
+   refine lt_of_le_of_lt ?_ (lt_top_iff_ne_top.mpr (gapsw80_t8_master_finite K I hσ))
+   rw [gapsw80_t8_lintegral_master_reindex K I σ.re]
+-  exact le_trans (ENNReal.le_tsum ω)
++  exact le_trans (by first | exact ENNReal.le_tsum ω | (convert ENNReal.le_tsum ω using 2; all_goals first | rfl | (congr 2; set_option pp.explicit true in trace_state)))
+     (le_mul_of_one_le_left' (by exact_mod_cast torsionOrder_pos K))
+ 
+@@ -4655,5 +4654,5 @@ theorem gapsw80_t8_rankinSelberg_unfold_c (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ
+       (ENNReal.summable_toReal hMaster'))
+     rw [← ENNReal.toReal_ofReal (norm_nonneg _), ofReal_norm_eq_enorm]
+-    exact ENNReal.toReal_mono (ne_top_of_le_ne_top hMaster' (ENNReal.le_tsum a))
++    exact ENNReal.toReal_mono (ne_top_of_le_ne_top hMaster' (by first | exact ENNReal.le_tsum a | (convert ENNReal.le_tsum a using 2; all_goals first | rfl | (congr 2; set_option pp.explicit true in trace_state))))
+       (enorm_integral_le_lintegral_enorm _)
+   have hF_Q : ∀ (a b : gapsw80_t8_nonzeroIdeal K I) (p : ℝ × logSpace K),
+@@ -4716,5 +4715,5 @@ theorem gapsw80_t8_rankinSelberg_unfold_c (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ
+       IntegrableOn (F b) ((Set.Ioi (0:ℝ)) ×ˢ (gapsw80_t7_unitBox K)) volume := fun b =>
+     ⟨hF_sm b, hasFiniteIntegral_iff_enorm.mpr
+-      (lt_of_le_of_lt (ENNReal.le_tsum b) (lt_top_iff_ne_top.mpr hMaster'))⟩
++      (lt_of_le_of_lt (by first | exact ENNReal.le_tsum b | (convert ENNReal.le_tsum b using 2; all_goals first | rfl | (congr 2; set_option pp.explicit true in trace_state))) (lt_top_iff_ne_top.mpr hMaster'))⟩
+   set ν : Measure (ℝ × logSpace K) :=
+     ((volume : Measure ℝ).restrict (Set.Ioi 0)).prod volume with hν_def
+diff --git a/P2M/Sol/S_NumberField_multipliable_differentiableOn_tprod_ne_zero_eulerProduct_of_norm_le_one.lean b/P2M/Sol/S_NumberField_multipliable_differentiableOn_tprod_ne_zero_eulerProduct_of_norm_le_one.lean
+index 882b7825..5009d20f 100644
+--- a/P2M/Sol/S_NumberField_multipliable_differentiableOn_tprod_ne_zero_eulerProduct_of_norm_le_one.lean
++++ b/P2M/Sol/S_NumberField_multipliable_differentiableOn_tprod_ne_zero_eulerProduct_of_norm_le_one.lean
+@@ -439,5 +439,5 @@ theorem tendsto_norm_tprod_atTop (T : Finset (HeightOneSpectrum (𝓞 K))) :
+   calc ‖∏ v ∈ T, (1 - ((Ideal.absNorm v.asIdeal : ℕ) : ℂ) ^ (-(σ : ℂ)))⁻¹‖
+       ≤ ∏ v ∈ T, ‖(1 - ((Ideal.absNorm v.asIdeal : ℕ) : ℂ) ^ (-(σ : ℂ)))⁻¹‖ := Finset.norm_prod_le _ _
+-    _ ≤ ∏ _v ∈ T, (2 : ℝ) := Finset.prod_le_prod (fun _ _ => norm_nonneg _)
++    _ ≤ ∏ _v ∈ T, (2 : ℝ) := Finset.prod_le_prod₀ (fun _ _ => norm_nonneg _)
+         (fun v _ => norm_inv_factor_le_two K hs.le v)
+     _ = 2 ^ T.card := Finset.prod_const 2
