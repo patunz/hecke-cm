@@ -140,7 +140,7 @@ Checked on 22–23 November 2026; I may have missed something.
 
 ## Files
 
-67 files, 12,948 lines in `HeckeCM/`. The main entry points:
+67 files, 12,950 lines in `HeckeCM/`. The main entry points:
 
 | File | Content |
 |---|---|
