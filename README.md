@@ -6,9 +6,17 @@ Mathlib's L-series of the congruent-number curves `C_d : y² = x³ − d²x` ove
 continuation satisfying a functional equation with an explicit sign and conductor, and that it
 vanishes at `s = 1` when `d ≡ 5, 6, 7 (mod 8)` is squarefree. On the algebraic side: the torsion of
 `C_d(ℚ)` is its 2-torsion, so `C_d` has a rational point of infinite order exactly when `d` is a
-congruent number.
+congruent number. For `C_5 : y² = x³ − 25x` both ranks are proved to be one: `C_5(ℚ)` is
+`ℤ P ⊕ (2-torsion)`, and the L-series vanishes to order exactly one at `s = 1`.
 
 ```lean
+theorem CMPoints.ranks_curve_five :
+    (∃ P : (⟨0, 0, 0, -((5 : ℕ) : ℚ) ^ 2, 0⟩ : WeierstrassCurve ℚ).toAffine.Point,
+      ¬ IsOfFinAddOrder P ∧ ∀ Q, ∃ m : ℤ, ∃ T, 2 • T = 0 ∧ Q = m • P + T) ∧
+    (∃ F : ℂ → ℂ, CMPoints.IsEntireContinuation ⟨0, 0, 0, -((5 : ℕ) : ℚ) ^ 2, 0⟩ F) ∧
+    ∀ F : ℂ → ℂ, CMPoints.IsEntireContinuation ⟨0, 0, 0, -((5 : ℕ) : ℚ) ^ 2, 0⟩ F →
+      analyticOrderAt F 1 = 1
+
 theorem CMPoints.entire_lseries_curveD_of_ne_zero {d : ℕ} (hd : d ≠ 0) :
     ∃ F : ℂ → ℂ, Differentiable ℂ F ∧ ∀ s : ℂ, 3 / 2 < s.re →
       F s = (⟨0, 0, 0, -(d : ℚ) ^ 2, 0⟩ : WeierstrassCurve ℚ).LSeries s
@@ -63,40 +71,49 @@ No `sorry`, no `native_decide`; `#print axioms` on these theorems gives
 | Every rational point with `y ≠ 0` has infinite order; a point is torsion iff `2P = 0` | `4 ∤ d` (in particular `d` squarefree) |
 | A point of infinite order exists iff `d` is a congruent number | `4 ∤ d` |
 | A point of infinite order, together with the vanishing (`PositiveRanks d`) | `d = 5, 6, 7`, from the points `(−4, 6)`, `(−3, 9)`, `(25, 120)` |
+| Theta relation `θ(y) = w·N⁻¹·y⁻²·θ(1/(Ny))` for `θ(y) = Σ aₙ e^{−2πny}`, `N = 32d²` | `d` odd squarefree |
+| `L(C_d, 1) = 0` and `L'(C_d, 1) = 4π·∫_A^∞ log(t/A) θ(t) dt`, `A = 1/√N` | `d = 5` (the formula is proved in general for sign `−1`, stated for `d = 5`) |
+| `L'(C_5, 1) ≠ 0`: order of vanishing exactly one | `d = 5` |
+| `C_5(ℚ) = ℤ P ⊕ C_5(ℚ)[2]` for a point `P` of infinite order | `d = 5` |
 
 ## Status and caveats
 
-- **No instance of BSD is proved.** For `d = 5, 6, 7` a point of infinite order and the vanishing
-  of `L` at `s = 1` are both proved, which is consistent with the conjecture and nothing more:
-  neither "the rank is 1", nor "the order of vanishing is 1", nor `L'(1) ≠ 0`, nor the equality of
-  the two ranks is shown.
+- **For `C_5` the rank part of BSD is proved, and nothing more of it.** Algebraic rank one and
+  analytic rank one. The formula for the leading coefficient (regulator, period, Ш) is not
+  addressed, the value of `L'(C_5, 1)` is not computed (only shown to be nonzero), and the
+  generator `P` is not exhibited: the statement is an existence statement. For `d = 6, 7` only a
+  point of infinite order and the vanishing of `L` at `s = 1` are proved.
+- **`L'(1) ≠ 0` is proved for `d = 5` only.** The reduction to an integral is general; the
+  numerical step uses `a₁ = 1`, `a₂ = … = a₈ = 0` and `|aₙ| ≤ (7/6)n`, and has to be redone for
+  another `d`. The numerical margin is `0.0186 < 0.0276`.
 - **Positive rank is not proved for general `d ≡ 5, 6, 7 (mod 8)`.** That is the open half of the
   congruent number problem, known only assuming BSD. What is proved is the reduction: for such
-  `d`, positive rank is equivalent to `d` being a congruent number. The group `C_d(ℚ)` is not shown
-  to be finitely generated here, so "rank" is used informally for "there is a point of infinite
-  order".
+  `d`, positive rank is equivalent to `d` being a congruent number. Outside `d = 5`, "rank" is used
+  informally for "there is a point of infinite order".
 - **Pinned** to `anthropics/fermats-last-theorem` commit `6e837e75` (Lean `v4.33.1`, Mathlib
   `0df444a3`). Tate's thesis for Hecke characters and the local root-number theorems come from
   there; this repository builds the Hecke character of `ℚ(i)`, identifies its L-function with
   Mathlib's, and computes the local root numbers.
 - **Lean 4.35.** `port-435/` contains a patch that makes the Fermat subset and this library compile
   with Lean `v4.35.0` / Mathlib `v4.35.0`; see [`port-435/README.md`](port-435/README.md).
-  `FunctionalEqStrip.lean` was added later and has not been compiled there.
+  The files added after 23 November 2026 (`FunctionalEqStrip`, the theta and rank files,
+  `Descent/`) have not been compiled there.
 - **Third-party code.** About 630 lines in four files are copied, with changes, from Mathlib, Tau
   Ceti and the Fermat repository (all Apache 2.0), and `port-435/fermat-435.patch` is a patch to
   the Fermat repository. See [`THIRD_PARTY.md`](THIRD_PARTY.md).
 - **Not Mathlib style.** The files do not use the module system, most of them `import Mathlib`
   wholesale, and the comments were translated from Italian. A few Lean identifiers and section
   names are still Italian words.
-- **Verification.** On 23 November 2026 `scripts/build.sh` was run from an empty directory on a
-  clean machine (9,074 jobs, about 25 minutes on 8 cores), with the axiom check above; the sources contain none of `sorry`,
-  `admit`, `native_decide`, `axiom`, `unsafe`, `implemented_by`. All runs were the author's; an
-  independent rebuild is welcome.
+- **Verification.** On 24 November 2026 the whole library was built on a clean machine on top of
+  the Fermat subset (9,102 jobs), with `#print axioms` on the main theorems; the sources contain
+  none of `sorry`, `admit`, `native_decide`, `axiom`, `unsafe`, `implemented_by`. `scripts/build.sh`
+  was last run end to end on the previous version (23 November, 9,074 jobs). All runs were the
+  author's; an independent rebuild is welcome.
 - **AI assistance.** The Lean code was written with Claude (Anthropic).
 
 ## Relation to other work
 
-Checked on 22–23 November 2026; I may have missed something.
+Checked on 22–24 November 2026; I may have missed something.
 
 - I did not find these statements proved in Mathlib, in Tau Ceti, in the Fermat repository, or in
   `formal-conjectures`. Tau Ceti has Grössencharakter L-functions whose continuation is defined
@@ -109,6 +126,13 @@ Checked on 22–23 November 2026; I may have missed something.
   `entire_lseries_curveD_of_ne_zero`, `vanishing_curveD_all` and `functional_equation_strip_five`
   prove all three as stated there. That check is not reproduced by this repository, which contains
   none of their code, and nothing has been submitted to Prove2Me.
+- The algebraic side for `C_5` is not new. `diophantine-z-q` has a complete 2-descent for the
+  curves `C_d` over `ℚ` (2-Selmer group, the bound on `C_d(ℚ)/2C_d(ℚ)`), and Michael Stoll's
+  `EllipticCurves` has Mordell–Weil and 2-Selmer groups in general. The descent here was written
+  independently and is much more special: three bits and one 5-adic fact for `d = 5`.
+- I did not find the theta relation, the formula for `L'(1)`, or `L'(C_5, 1) ≠ 0` formalised
+  elsewhere. In `diophantine-z-q` the general statement "order of vanishing at most one"
+  (`TYZRow5b`) is a hypothesis; the result here is the single case `d = 5` and does not prove it.
 - That the torsion of `C_d(ℚ)` is `ℤ/2 × ℤ/2` is classical. The argument here is elementary
   (duplication formula and parity); it uses no reduction modulo primes. Tau Ceti and Michael
   Stoll's [`EllipticCurves`](https://github.com/MichaelStollBayreuth/EllipticCurves) have a general
@@ -137,10 +161,25 @@ Checked on 22–23 November 2026; I may have missed something.
    lowest terms and checking parities (this is where `4 ∤ d` is used), `v₂(x(2P)) < 0`. And if
    `v₂(x(Q)) < 0` then `v₂(x(2Q)) = v₂(x(Q)) − 2`, so the points `2ᵏP`, `k ≥ 1`, are pairwise
    distinct.
+7. **From the functional equation to the theta series.** Hecke's argument read backwards. The
+   Fermat repository gives polynomial growth of `L` in vertical strips; `Γ` decays on vertical
+   lines by `Γ(s+1) = sΓ(s)` alone; Mellin inversion and a shift of the line of integration
+   (Cauchy on rectangles) give `θ(y) = w N⁻¹ y⁻² θ(1/(Ny))`. No Phragmén–Lindelöf.
+8. **The derivative.** With the theta relation the Mellin transform of `θ` is holomorphic near
+   `s = 1`, and the substitution `t ↦ 1/(Nt)`, done through Mathlib's Mellin identities, gives
+   `Λ'(1) = 4 ∫_A^∞ log(t/A) θ(t) dt` when the sign is `−1`.
+9. **Non-vanishing for `d = 5`.** Term-by-term integration; the first term is at least
+   `log 2·(e^{−2x} + e^{−4x})/(2π)` and the rest at most `(7/54)/(A(2π)²)·e^{−9x}/(1 − e^{−x})`,
+   `x = 2πA ≈ 0.2221`.
+10. **Rank one for `C_5`.** Mordell–Weil by naive heights and 2-descent. The descent invariant of
+    a point with `y ≠ 0` depends on three bits (the sign of `x`, the parities of `v₂(x+5)` and
+    `v₅(x+5)`), because `v₂(x+5)` is even iff `v₅(x)` is even; this follows from `±2` not being
+    squares modulo 5. So `C_5(ℚ)/2C_5(ℚ)` has at most 8 elements, while rank `≥ 2` would give 16.
 
 ## Files
 
-67 files, 12,950 lines in `HeckeCM/`. The main entry points:
+85 files, 16,866 lines in `HeckeCM/`. Fifteen of the files added last use Mathlib only
+(`Theta*` except `ThetaCurve`, `HeckeConverse`, `ExpLogIntegral`, `InfiniteOrder`, `Descent/`). The main entry points:
 
 | File | Content |
 |---|---|
@@ -156,6 +195,13 @@ Checked on 22–23 November 2026; I may have missed something.
 | `FunctionalEqStrip.lean` | the functional equation in classical form on the strip |
 | `InfiniteOrder.lean` | torsion, points of infinite order, congruent numbers (Mathlib only) |
 | `BsdInstances.lean` | `vanishing_and_rank`; `PositiveRanks 5, 6, 7` |
+| `ThetaSeries.lean`, `ThetaInversion.lean`, `HeckeConverse.lean` | theta series, Mellin transform, the theta relation from a functional equation (Mathlib only) |
+| `GrowthStrip.lean`, `ThetaCurve.lean` | polynomial growth in vertical strips; the theta relation for `C_d` |
+| `ThetaDerivative.lean`, `ExpLogIntegral.lean`, `ThetaNumerics.lean` | the derivative at `s = 1` as an integral, and its non-vanishing (Mathlib only) |
+| `AnalyticRankFive.lean` | `L(C_5, s)` vanishes to order exactly one at `s = 1` |
+| `Descent/AddSubMap.lean`, `NaiveHeight.lean`, `TwoDescent.lean`, `SquareClass.lean`, `WeakMordellWeil.lean` | Mordell–Weil for `y² = (x−e₁)(x−e₂)(x−e₃)` over `ℚ` (Mathlib only) |
+| `Descent/RankAux.lean`, `LocalFive.lean`, `RankFive.lean` | `C_5(ℚ)/2C_5(ℚ)` has at most 8 elements; the generator |
+| `BsdFive.lean` | `ranks_curve_five` |
 
 ## Building
 

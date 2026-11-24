@@ -14,6 +14,7 @@ lake build HeckeCM
 cat > AxiomCheck.lean <<'EOF'
 import HeckeCM.BsdInstances
 import HeckeCM.FunctionalEqStrip
+import HeckeCM.BsdFive
 #print axioms CMPoints.entire_lseries_curveD_of_ne_zero
 #print axioms CMPoints.functional_equation_curveD_odd
 #print axioms CMPoints.functional_equation_curveD_two_mul
@@ -25,5 +26,9 @@ import HeckeCM.FunctionalEqStrip
 #print axioms CMPoints.positiveRanks_five
 #print axioms CMPoints.positiveRanks_six
 #print axioms CMPoints.positiveRanks_seven
+#print axioms CMPoints.thetaCurve_inversion
+#print axioms CMPoints.deriv_ne_zero_curve_five
+#print axioms BSD.exists_generator_curve_five
+#print axioms CMPoints.ranks_curve_five
 EOF
 lake env lean AxiomCheck.lean
