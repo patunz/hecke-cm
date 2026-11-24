@@ -35,5 +35,6 @@ one local rank-one instance, now taken from Mathlib.
 ## Check (2026-11-23)
 
 The recipe was run from scratch on a clean machine: Fermat subset 9,374 jobs,
-then `HeckeCM` (all 66 files, with `heckecm-435.patch` applied) 9,415 jobs, no
-errors.
+then `HeckeCM` (the 66 files present at the time, with `heckecm-435.patch`
+applied) 9,415 jobs, no errors. `FunctionalEqStrip.lean` was added later and has
+not been compiled with Lean 4.35.

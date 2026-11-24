@@ -58,6 +58,7 @@ No `sorry`, no `native_decide`; `#print axioms` on these theorems gives
 | Sign and conductor, `d` odd | `w = χ₈(d)·χ₄(d) = (−2/d)`, `N = 32 d²` |
 | Sign and conductor, `d = 2e`, `e` odd | `w = χ₄(e)`, `N = 64 e² = 16 d²` |
 | `d = 1` | `Λ(s) = 32^{1−s} Λ(2−s)` |
+| Classical form `Λ*(s) = N^{s/2}(2π)^{−s}Γ(s)F(s)`, `Λ*(s) = w·Λ*(2−s)`, for every entire continuation `F` and `0 < Re s < 2` | `d` odd squarefree; `w = −1` for `d ≡ 5 (mod 8)` |
 | Vanishing at `s = 1` of every entire continuation | `d ≡ 5, 6, 7 (mod 8)` squarefree, and `d·m²` |
 | Every rational point with `y ≠ 0` has infinite order; a point is torsion iff `2P = 0` | `4 ∤ d` (in particular `d` squarefree) |
 | A point of infinite order exists iff `d` is a congruent number | `4 ∤ d` |
@@ -80,6 +81,7 @@ No `sorry`, no `native_decide`; `#print axioms` on these theorems gives
   Mathlib's, and computes the local root numbers.
 - **Lean 4.35.** `port-435/` contains a patch that makes the Fermat subset and this library compile
   with Lean `v4.35.0` / Mathlib `v4.35.0`; see [`port-435/README.md`](port-435/README.md).
+  `FunctionalEqStrip.lean` was added later and has not been compiled there.
 - **Third-party code.** About 630 lines in four files are copied, with changes, from Mathlib, Tau
   Ceti and the Fermat repository (all Apache 2.0), and `port-435/fermat-435.patch` is a patch to
   the Fermat repository. See [`THIRD_PARTY.md`](THIRD_PARTY.md).
@@ -87,7 +89,7 @@ No `sorry`, no `native_decide`; `#print axioms` on these theorems gives
   wholesale, and the comments were translated from Italian. A few Lean identifiers and section
   names are still Italian words.
 - **Verification.** On 23 November 2026 `scripts/build.sh` was run from an empty directory on a
-  clean machine (9,073 jobs, about 25 minutes on 8 cores), with the axiom check above; the sources contain none of `sorry`,
+  clean machine (9,074 jobs, about 25 minutes on 8 cores), with the axiom check above; the sources contain none of `sorry`,
   `admit`, `native_decide`, `axiom`, `unsafe`, `implemented_by`. All runs were the author's; an
   independent rebuild is welcome.
 - **AI assistance.** The Lean code was written with Claude (Anthropic).
@@ -99,12 +101,14 @@ Checked on 22–23 November 2026; I may have missed something.
 - I did not find these statements proved in Mathlib, in Tau Ceti, in the Fermat repository, or in
   `formal-conjectures`. Tau Ceti has Grössencharakter L-functions whose continuation is defined
   "if it exists".
-- [`elliotglazer/diophantine-z-q`](https://github.com/elliotglazer/diophantine-z-q) states two
-  hypotheses, `ZInQ.Literature.HeckeContinuation` and `ZInQ.Literature.RootNumberVanishing`
-  (the latter for `d ≡ 5 (mod 8)`). With that repository (commit `964d7dd7`, Lean `v4.35.0`) added
-  as a dependency on a scratch machine, `entire_lseries_curveD_of_ne_zero` and
-  `vanishing_curveD_all` prove both as stated there. That check is not reproduced by this
-  repository, which contains none of their code.
+- [`elliotglazer/diophantine-z-q`](https://github.com/elliotglazer/diophantine-z-q) states three
+  hypotheses about these curves, `ZInQ.Literature.HeckeContinuation`,
+  `ZInQ.Literature.RootNumberVanishing` and `ZInQ.Literature.FunctionalEquation5` (the last two
+  for `d ≡ 5 (mod 8)`); the first and the third are open problems on Prove2Me. On a scratch
+  machine, with their definitions copied into a temporary file (Lean `v4.33.1`),
+  `entire_lseries_curveD_of_ne_zero`, `vanishing_curveD_all` and `functional_equation_strip_five`
+  prove all three as stated there. That check is not reproduced by this repository, which contains
+  none of their code, and nothing has been submitted to Prove2Me.
 - That the torsion of `C_d(ℚ)` is `ℤ/2 × ℤ/2` is classical. The argument here is elementary
   (duplication formula and parity); it uses no reduction modulo primes. Tau Ceti and Michael
   Stoll's [`EllipticCurves`](https://github.com/MichaelStollBayreuth/EllipticCurves) have a general
@@ -136,7 +140,7 @@ Checked on 22–23 November 2026; I may have missed something.
 
 ## Files
 
-66 files, 12,837 lines in `HeckeCM/`. The main entry points:
+67 files, 12,948 lines in `HeckeCM/`. The main entry points:
 
 | File | Content |
 |---|---|
@@ -149,6 +153,7 @@ Checked on 22–23 November 2026; I may have missed something.
 | `GaussLocal.lean`, `TwistLocal.lean`, `RootInert.lean`, `RootSplit.lean`, `RootPair.lean`, `RootTwist.lean` | the sign for `d` odd squarefree |
 | `GaussLocalN.lean`, `RootEvenTwo.lean`, `RootEvenChar.lean`, `RootEven.lean` | the sign for `d = 2e` |
 | `RootAll.lean`, `Bridge.lean` | conductors, explicit functional equations, final statements |
+| `FunctionalEqStrip.lean` | the functional equation in classical form on the strip |
 | `InfiniteOrder.lean` | torsion, points of infinite order, congruent numbers (Mathlib only) |
 | `BsdInstances.lean` | `vanishing_and_rank`; `PositiveRanks 5, 6, 7` |
 

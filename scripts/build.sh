@@ -13,10 +13,12 @@ grep -q 'lean_lib HeckeCM' lakefile.lean || printf '\nlean_lib HeckeCM where\n  
 lake build HeckeCM
 cat > AxiomCheck.lean <<'EOF'
 import HeckeCM.BsdInstances
+import HeckeCM.FunctionalEqStrip
 #print axioms CMPoints.entire_lseries_curveD_of_ne_zero
 #print axioms CMPoints.functional_equation_curveD_odd
 #print axioms CMPoints.functional_equation_curveD_two_mul
 #print axioms CMPoints.vanishing_curveD_all
+#print axioms CMPoints.functional_equation_strip_five
 #print axioms CMPoints.not_isOfFinAddOrder_of_ne_zero
 #print axioms CMPoints.exists_not_isOfFinAddOrder_iff_isCongruent
 #print axioms CMPoints.vanishing_and_rank
