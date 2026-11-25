@@ -109,7 +109,8 @@ No `sorry`, no `native_decide`; `#print axioms` on these theorems gives
   the Fermat subset (9,102 jobs; 9,108 on 25 November with the six files on the value of
   `L'(C_5, 1)`), with `#print axioms` on the main theorems; the sources contain
   none of `sorry`, `admit`, `native_decide`, `axiom`, `unsafe`, `implemented_by`. `scripts/build.sh`
-  was last run end to end on the previous version (23 November, 9,074 jobs). All runs were the
+  was last run end to end, from a fresh clone of this repository, on the version of 24 November
+  (9,102 jobs), not on the current one. All runs were the
   author's; an independent rebuild is welcome.
 - **AI assistance.** The Lean code was written with Claude (Anthropic).
 
