@@ -124,8 +124,7 @@ Checked on 22–25 November 2026; I may have missed something.
   2026 (`ZInQKernel/Contrib/HeckeFE`, `GaussFE`, `HeckeAll`; pull requests #64 and #169 of the
   upstream repository). They use Mathlib only, through theta kernels and Gauss's point count, and
   predate this repository. I found them on 25 November, after writing the proofs here, which are
-  independent and go through Tate's thesis instead. I have not compared the two in detail, and I
-  have not searched that fork (about 13,000 Lean files) for the other results listed below.
+  independent and go through Tate's thesis instead. I have not compared the two in detail.
 
 - I did not find these statements proved in Mathlib, in Tau Ceti, in the Fermat repository, or in
   `formal-conjectures`. Tau Ceti has Grössencharakter L-functions whose continuation is defined
@@ -144,7 +143,10 @@ Checked on 22–25 November 2026; I may have missed something.
   `EllipticCurves` has Mordell–Weil and 2-Selmer groups in general. The descent here was written
   independently and is much more special: three bits and one 5-adic fact for `d = 5`.
 - I did not find the formula for `L'(1)`, `L'(C_5, 1) ≠ 0` or bounds for `L'(C_5, 1)` formalised
-  elsewhere, with the limit on the search stated in the first point. The fork above has theta
+  elsewhere. On 25 November I searched that fork at commit `0bcd7b8d` (about 13,000 Lean files)
+  and `nasqret/z-in-q-lean` by text, for `deriv F 1`, `analyticOrderAt`, explicit `d = 5` and
+  numerical bounds: every hit is a hypothesis or a general lemma, none is a statement about a
+  specific curve. A text search can miss a result stated in other words. The fork above has theta
   kernels with their own inversion formula, so the theta relation here is not new as an idea. In `diophantine-z-q` the general statement "order of vanishing at most one"
   (`TYZRow5b`) is a hypothesis; the result here is the single case `d = 5` and does not prove it.
 - That the torsion of `C_d(ℚ)` is `ℤ/2 × ℤ/2` is classical. The argument here is elementary
