@@ -74,13 +74,14 @@ No `sorry`, no `native_decide`; `#print axioms` on these theorems gives
 | Theta relation `θ(y) = w·N⁻¹·y⁻²·θ(1/(Ny))` for `θ(y) = Σ aₙ e^{−2πny}`, `N = 32d²` | `d` odd squarefree |
 | `L(C_d, 1) = 0` and `L'(C_d, 1) = 4π·∫_A^∞ log(t/A) θ(t) dt`, `A = 1/√N` | `d = 5` (the formula is proved in general for sign `−1`, stated for `d = 5`) |
 | `L'(C_5, 1) ≠ 0`: order of vanishing exactly one | `d = 5` |
+| `2.22 < L'(C_5, 1) < 2.23` (`deriv_curve_five_bounds`) | `d = 5` |
 | `C_5(ℚ) = ℤ P ⊕ C_5(ℚ)[2]` for a point `P` of infinite order | `d = 5` |
 
 ## Status and caveats
 
 - **For `C_5` the rank part of BSD is proved, and nothing more of it.** Algebraic rank one and
   analytic rank one. The formula for the leading coefficient (regulator, period, Ш) is not
-  addressed, the value of `L'(C_5, 1)` is not computed (only shown to be nonzero), and the
+  addressed, `L'(C_5, 1)` is only located in the interval `(2.22, 2.23)`, and the
   generator `P` is not exhibited: the statement is an existence statement. For `d = 6, 7` only a
   point of infinite order and the vanishing of `L` at `s = 1` are proved.
 - **`L'(1) ≠ 0` is proved for `d = 5` only.** The reduction to an integral is general; the
@@ -105,7 +106,8 @@ No `sorry`, no `native_decide`; `#print axioms` on these theorems gives
   wholesale, and the comments were translated from Italian. A few Lean identifiers and section
   names are still Italian words.
 - **Verification.** On 24 November 2026 the whole library was built on a clean machine on top of
-  the Fermat subset (9,102 jobs), with `#print axioms` on the main theorems; the sources contain
+  the Fermat subset (9,102 jobs; 9,108 on 25 November with the six files on the value of
+  `L'(C_5, 1)`), with `#print axioms` on the main theorems; the sources contain
   none of `sorry`, `admit`, `native_decide`, `axiom`, `unsafe`, `implemented_by`. `scripts/build.sh`
   was last run end to end on the previous version (23 November, 9,074 jobs). All runs were the
   author's; an independent rebuild is welcome.
@@ -130,7 +132,8 @@ Checked on 22–24 November 2026; I may have missed something.
   curves `C_d` over `ℚ` (2-Selmer group, the bound on `C_d(ℚ)/2C_d(ℚ)`), and Michael Stoll's
   `EllipticCurves` has Mordell–Weil and 2-Selmer groups in general. The descent here was written
   independently and is much more special: three bits and one 5-adic fact for `d = 5`.
-- I did not find the theta relation, the formula for `L'(1)`, or `L'(C_5, 1) ≠ 0` formalised
+- I did not find the theta relation, the formula for `L'(1)`, `L'(C_5, 1) ≠ 0` or bounds for
+  `L'(C_5, 1)` formalised
   elsewhere. In `diophantine-z-q` the general statement "order of vanishing at most one"
   (`TYZRow5b`) is a hypothesis; the result here is the single case `d = 5` and does not prove it.
 - That the torsion of `C_d(ℚ)` is `ℤ/2 × ℤ/2` is classical. The argument here is elementary
@@ -175,11 +178,19 @@ Checked on 22–24 November 2026; I may have missed something.
     a point with `y ≠ 0` depends on three bits (the sign of `x`, the parities of `v₂(x+5)` and
     `v₅(x+5)`), because `v₂(x+5)` is even iff `v₅(x)` is even; this follows from `±2` not being
     squares modulo 5. So `C_5(ℚ)/2C_5(ℚ)` has at most 8 elements, while rank `≥ 2` would give 16.
+11. **The interval for `L'(C_5, 1)`.** `L'(1) = 2·Σ aₙ E₁(nx)/n`, `x = 2π/√800`, with `E₁` the
+    exponential integral. Exact coefficients for `n < 49` (nonzero only at 1, 9, 13, 17, 29, 37,
+    41), `|aₙ| ≤ (7/6)n` beyond. For `z ≥ 2`, `E₁(z)` lies between `e^{−z}` times two convergents
+    of its continued fraction, each proved by comparing derivatives; `E₁(x) = ∫_x^{9x} e^{−t}/t dt +
+    E₁(9x)` and the integral is `log 9` plus a polynomial, so neither Euler's constant nor `log π`
+    is needed. `e^{−t}` is bracketed by Taylor polynomials, evaluated in exact rational arithmetic
+    by `norm_num`. A floating-point evaluation gives `2.22737`; that value is not proved.
 
 ## Files
 
-85 files, 16,866 lines in `HeckeCM/`. Fifteen of the files added last use Mathlib only
-(`Theta*` except `ThetaCurve`, `HeckeConverse`, `ExpLogIntegral`, `InfiniteOrder`, `Descent/`). The main entry points:
+91 files, 18,008 lines in `HeckeCM/`. Twenty of the files added last use Mathlib only
+(`Theta*` except `ThetaCurve`, `HeckeConverse`, `ExpLogIntegral`, `ExpIntegral*`,
+`DerivativeValue`, `GenCoeffBounds`, `CoeffFive`, `InfiniteOrder`, `Descent/`). The main entry points:
 
 | File | Content |
 |---|---|
@@ -199,6 +210,9 @@ Checked on 22–24 November 2026; I may have missed something.
 | `GrowthStrip.lean`, `ThetaCurve.lean` | polynomial growth in vertical strips; the theta relation for `C_d` |
 | `ThetaDerivative.lean`, `ExpLogIntegral.lean`, `ThetaNumerics.lean` | the derivative at `s = 1` as an integral, and its non-vanishing (Mathlib only) |
 | `AnalyticRankFive.lean` | `L(C_5, s)` vanishes to order exactly one at `s = 1` |
+| `ExpIntegral.lean`, `ExpIntegralNumerics.lean`, `DerivativeValue.lean` | the exponential integral with explicit bounds; the interval, abstractly (Mathlib only) |
+| `GenCoeffBounds.lean`, `CoeffFive.lean` | `|aₙ| ≤ (7/6)n`; the coefficients of `C_5` for `n < 49` (Mathlib only) |
+| `ValueFive.lean` | `2.22 < L'(C_5, 1) < 2.23` |
 | `Descent/AddSubMap.lean`, `NaiveHeight.lean`, `TwoDescent.lean`, `SquareClass.lean`, `WeakMordellWeil.lean` | Mordell–Weil for `y² = (x−e₁)(x−e₂)(x−e₃)` over `ℚ` (Mathlib only) |
 | `Descent/RankAux.lean`, `LocalFive.lean`, `RankFive.lean` | `C_5(ℚ)/2C_5(ℚ)` has at most 8 elements; the generator |
 | `BsdFive.lean` | `ranks_curve_five` |

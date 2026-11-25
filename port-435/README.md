@@ -37,4 +37,4 @@ one local rank-one instance, now taken from Mathlib.
 The recipe was run from scratch on a clean machine: Fermat subset 9,374 jobs,
 then `HeckeCM` (the 66 files present at the time, with `heckecm-435.patch`
 applied) 9,415 jobs, no errors. The files added after that (`FunctionalEqStrip`,
-the theta and rank files, `Descent/`) have not been compiled with Lean 4.35.
+the theta, rank and value files, `Descent/`) have not been compiled with Lean 4.35.
