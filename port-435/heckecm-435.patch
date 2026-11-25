@@ -52,3 +52,14 @@
  end WeierstrassCurve
  
  /-! ## From Tau Ceti: the equation under a change of variables -/
+--- a/HeckeCM/Descent/NaiveHeight.lean
++++ b/HeckeCM/Descent/NaiveHeight.lean
+@@ -106,7 +106,7 @@
+       |naiveHeight W (P + Q) + naiveHeight W (P - Q) -
+         2 * (naiveHeight W P + naiveHeight W Q)| ≤ C := by
+   obtain ⟨C₁, h₁⟩ := abs_logHeight_sym2x_sub_le W
+-  obtain ⟨C₂, h₂⟩ := abs_logHeight_addSubMap_sub_two_mul_logHeight_le W
++  obtain ⟨C₂, h₂⟩ := WeierstrassCurve.abs_logHeight_addSubMap_sub_two_mul_logHeight_le W
+   refine ⟨3 * C₁ + C₂, fun P Q => ?_⟩
+   obtain ⟨c, hc, hF⟩ := addSubSpec W P Q
+   have e : logHeight (fun i => (W.addSubMap i).eval (P.sym2x Q)) =

@@ -604,3 +604,75 @@ index 882b7825..5009d20f 100644
 +    _ ≤ ∏ _v ∈ T, (2 : ℝ) := Finset.prod_le_prod₀ (fun _ _ => norm_nonneg _)
          (fun v _ => norm_inv_factor_le_two K hs.le v)
      _ = 2 ^ T.card := Finset.prod_const 2
+--- a/P2M/Sol/S_LanglandsTunnell_ArchPlace_forall_continuous_exists_eq_realCharFun_and_forall_continuous_exists_eq_complexCharFun.lean
++++ b/P2M/Sol/S_LanglandsTunnell_ArchPlace_forall_continuous_exists_eq_realCharFun_and_forall_continuous_exists_eq_complexCharFun.lean
+@@ -81,10 +81,7 @@
+           exact h__af
+         exact h1.cexp
+       have := (hφd' x).mul he
+-      convert this using 1
+-      · rfl
+-      · rfl
+-      ring
++      exact this.congr_deriv (by ring)
+     have hdiff : Differentiable ℝ (fun x : ℝ => φ x * Complex.exp (-(l * x))) := fun x =>
+       (hd x).differentiableAt
+     intro x
+--- a/P2M/Sol/S_NumberField_TateGlobal_exists_differentiable_forall_norm_le_and_eq_mul_prod_GammaReal_mul_tprod_of_isUnitaryChar.lean
++++ b/P2M/Sol/S_NumberField_TateGlobal_exists_differentiable_forall_norm_le_and_eq_mul_prod_GammaReal_mul_tprod_of_isUnitaryChar.lean
+@@ -997,7 +997,7 @@
+     ‖∏ v ∈ U, (1 - a v * (((Ideal.absNorm v.asIdeal : ℕ) : ℂ) ^ (-s)))‖ ≤
+       ∏ v ∈ U, (1 + ((Ideal.absNorm v.asIdeal : ℕ) : ℝ) ^ (-σ)) := by
+   rw [norm_prod]
+-  refine Finset.prod_le_prod (fun v _ => norm_nonneg _) fun v _ => ?_
++  refine Finset.prod_le_prod₀ (fun v _ => norm_nonneg _) fun v _ => ?_
+   have hN := one_lt_absNorm K v
+   have hNpos : 0 < Ideal.absNorm v.asIdeal := by exact_mod_cast zero_lt_one.trans hN
+   have h1 : ‖a v * (((Ideal.absNorm v.asIdeal : ℕ) : ℂ) ^ (-s))‖ ≤
+@@ -1773,7 +1773,7 @@
+   choose! C hC using h
+   refine ⟨∏ v ∈ S', max 0 (C v), fun s hs1 hs2 => ?_⟩
+   rw [norm_prod]
+-  exact Finset.prod_le_prod (fun v _ => norm_nonneg _) fun v hv =>
++  exact Finset.prod_le_prod₀ (fun v _ => norm_nonneg _) fun v hv =>
+     (hC v hv s hs1 hs2).trans (le_max_right _ _)
+ 
+ private abbrev Slots (F : Type) [Field F] : Type :=
+--- a/P2M/Sol/S_NumberField_TateGlobal_exists_forall_norm_le_mul_of_differentiable_of_eq_partialEulerProduct_of_re_mem_Icc.lean
++++ b/P2M/Sol/S_NumberField_TateGlobal_exists_forall_norm_le_mul_of_differentiable_of_eq_partialEulerProduct_of_re_mem_Icc.lean
+@@ -341,7 +341,7 @@
+       simp only [hf_def]
+       exact norm_inv_one_sub_mul_cpow_le K i.1 (a i.1) (ha i.1) σ₀ hσ₀ w hw
+     calc ∏ i ∈ s, ‖f i‖ ≤ ∏ i ∈ s, (1 - ((Ideal.absNorm i.1.asIdeal : ℕ) : ℝ) ^ (-σ₀))⁻¹ :=
+-          Finset.prod_le_prod (fun i _ => norm_nonneg _) hle
++          Finset.prod_le_prod₀ (fun i _ => norm_nonneg _) hle
+       _ = ∏ v ∈ s.map (Function.Embedding.subtype _),
+             (1 - ((Ideal.absNorm v.asIdeal : ℕ) : ℝ) ^ (-σ₀))⁻¹ := by
+           rw [Finset.prod_map]
+@@ -391,7 +391,7 @@
+     ‖∏ v ∈ U, (1 - a v * (((Ideal.absNorm v.asIdeal : ℕ) : ℂ) ^ (-s)))‖ ≤
+       ∏ v ∈ U, (1 + ((Ideal.absNorm v.asIdeal : ℕ) : ℝ) ^ (-σ)) := by
+   rw [norm_prod]
+-  refine Finset.prod_le_prod (fun v _ => norm_nonneg _) fun v _ => ?_
++  refine Finset.prod_le_prod₀ (fun v _ => norm_nonneg _) fun v _ => ?_
+   have hN := one_lt_absNorm K v
+   have hNpos : 0 < Ideal.absNorm v.asIdeal := by exact_mod_cast zero_lt_one.trans hN
+   have h1 : ‖a v * (((Ideal.absNorm v.asIdeal : ℕ) : ℂ) ^ (-s))‖ ≤
+@@ -894,7 +894,7 @@
+     intro z hz1 hz2
+     have hΓ : ‖∏ j, (Gammaℝ (z + c j))⁻¹‖ ≤ (∏ j, Dj j) * Real.exp ((∑ j, Cj j) * ‖z‖) := by
+       rw [norm_prod, Finset.sum_mul, Real.exp_sum, ← Finset.prod_mul_distrib]
+-      exact Finset.prod_le_prod (fun j _ => norm_nonneg _) fun j _ => hinvj j z hz1 hz2
++      exact Finset.prod_le_prod₀ (fun j _ => norm_nonneg _) fun j _ => hinvj j z hz1 hz2
+     have hexp : Real.exp ((∑ j, Cj j) * ‖z‖) ≤
+         Real.exp ((∑ j, Cj j) / Real.log 2 * ‖z‖ * Real.log (2 + ‖z‖)) := by
+       apply Real.exp_le_exp.2
+@@ -951,7 +951,7 @@
+     have hpairs : ‖∏ j, (Gammaℝ (1 - ((σL : ℂ) + (t : ℂ) * Complex.I) + d j) *
+         (Gammaℝ (((σL : ℂ) + (t : ℂ) * Complex.I) + c j))⁻¹)‖ ≤ (∏ j, Aj j) * (1 + |t|) ^ (∑ j, Nj j) := by
+       rw [norm_prod, ← Finset.prod_pow_eq_pow_sum, ← Finset.prod_mul_distrib]
+-      refine Finset.prod_le_prod (fun j _ => norm_nonneg _) fun j _ => ?_
++      refine Finset.prod_le_prod₀ (fun j _ => norm_nonneg _) fun j _ => ?_
+       have e1 : 1 - ((σL : ℂ) + (t : ℂ) * Complex.I) + d j =
+           ((1 - σL + (d j).re : ℝ) : ℂ) + ((((d j).im : ℝ) : ℂ) - (t : ℂ)) * I := by
+         apply Complex.ext <;> simp

@@ -95,10 +95,9 @@ No `sorry`, no `native_decide`; `#print axioms` on these theorems gives
   `0df444a3`). Tate's thesis for Hecke characters and the local root-number theorems come from
   there; this repository builds the Hecke character of `ℚ(i)`, identifies its L-function with
   Mathlib's, and computes the local root numbers.
-- **Lean 4.35.** `port-435/` contains a patch that makes the Fermat subset and this library compile
-  with Lean `v4.35.0` / Mathlib `v4.35.0`; see [`port-435/README.md`](port-435/README.md).
-  The files added after 23 November 2026 (`FunctionalEqStrip`, the theta and rank files,
-  `Descent/`) have not been compiled there.
+- **Lean 4.35.** `port-435/` contains patches that make the Fermat subset and this whole library
+  compile with Lean `v4.35.0` / Mathlib `v4.35.0` (checked on 25 November 2026, all 91 files); see
+  [`port-435/README.md`](port-435/README.md). The library is developed with Lean 4.33.1.
 - **Third-party code.** About 630 lines in four files are copied, with changes, from Mathlib, Tau
   Ceti and the Fermat repository (all Apache 2.0), and `port-435/fermat-435.patch` is a patch to
   the Fermat repository. See [`THIRD_PARTY.md`](THIRD_PARTY.md).
