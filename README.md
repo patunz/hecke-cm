@@ -115,7 +115,17 @@ No `sorry`, no `native_decide`; `#print axioms` on these theorems gives
 
 ## Relation to other work
 
-Checked on 22–24 November 2026; I may have missed something.
+Checked on 22–25 November 2026; I may have missed something.
+
+- **The continuation and the functional equation for these curves were already formalised.** The
+  development fork of `diophantine-z-q`,
+  [`Deicyde/diophantine-z-q`](https://github.com/Deicyde/diophantine-z-q), has proofs of
+  `ZInQ.Literature.HeckeContinuation` and `ZInQ.Literature.FunctionalEquation5` since 13 November
+  2026 (`ZInQKernel/Contrib/HeckeFE`, `GaussFE`, `HeckeAll`; pull requests #64 and #169 of the
+  upstream repository). They use Mathlib only, through theta kernels and Gauss's point count, and
+  predate this repository. I found them on 25 November, after writing the proofs here, which are
+  independent and go through Tate's thesis instead. I have not compared the two in detail, and I
+  have not searched that fork (about 13,000 Lean files) for the other results listed below.
 
 - I did not find these statements proved in Mathlib, in Tau Ceti, in the Fermat repository, or in
   `formal-conjectures`. Tau Ceti has Grössencharakter L-functions whose continuation is defined
@@ -123,7 +133,8 @@ Checked on 22–24 November 2026; I may have missed something.
 - [`elliotglazer/diophantine-z-q`](https://github.com/elliotglazer/diophantine-z-q) states three
   hypotheses about these curves, `ZInQ.Literature.HeckeContinuation`,
   `ZInQ.Literature.RootNumberVanishing` and `ZInQ.Literature.FunctionalEquation5` (the last two
-  for `d ≡ 5 (mod 8)`); the first and the third are open problems on Prove2Me. On a scratch
+  for `d ≡ 5 (mod 8)`); the first and the third are open problems on Prove2Me and are not yet
+  proved on the main branch of that repository (see the previous point for its fork). On a scratch
   machine, with their definitions copied into a temporary file (Lean `v4.33.1`),
   `entire_lseries_curveD_of_ne_zero`, `vanishing_curveD_all` and `functional_equation_strip_five`
   prove all three as stated there. That check is not reproduced by this repository, which contains
@@ -132,9 +143,9 @@ Checked on 22–24 November 2026; I may have missed something.
   curves `C_d` over `ℚ` (2-Selmer group, the bound on `C_d(ℚ)/2C_d(ℚ)`), and Michael Stoll's
   `EllipticCurves` has Mordell–Weil and 2-Selmer groups in general. The descent here was written
   independently and is much more special: three bits and one 5-adic fact for `d = 5`.
-- I did not find the theta relation, the formula for `L'(1)`, `L'(C_5, 1) ≠ 0` or bounds for
-  `L'(C_5, 1)` formalised
-  elsewhere. In `diophantine-z-q` the general statement "order of vanishing at most one"
+- I did not find the formula for `L'(1)`, `L'(C_5, 1) ≠ 0` or bounds for `L'(C_5, 1)` formalised
+  elsewhere, with the limit on the search stated in the first point. The fork above has theta
+  kernels with their own inversion formula, so the theta relation here is not new as an idea. In `diophantine-z-q` the general statement "order of vanishing at most one"
   (`TYZRow5b`) is a hypothesis; the result here is the single case `d = 5` and does not prove it.
 - That the torsion of `C_d(ℚ)` is `ℤ/2 × ℤ/2` is classical. The argument here is elementary
   (duplication formula and parity); it uses no reduction modulo primes. Tau Ceti and Michael
